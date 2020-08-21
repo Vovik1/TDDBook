@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.utils.html import escape
 from lists.forms import ItemForm, EMPTY_ITEM_ERROR
 from lists.models import Item, List
+from unittest import skip
 
 # Create your tests here.
 class HomePageTest(TestCase):
@@ -65,27 +66,37 @@ class ListViewTest(TestCase):
 
     def post_invalid_input(self):
         list_ = List.objects.create()
-        return self.client.post(
-            '/lists/{}/'.format(list_.id),
-            data={'text': ''}
-        )
+        return self.client.post("/lists/{}/".format(list_.id), data={"text": ""})
 
     def test_for_invalid_input_nothing_saved_to_db(self):
         self.post_invalid_input()
         self.assertEqual(Item.objects.count(), 0)
-    
+
     def test_for_invalid_input_readers_list_template(self):
         response = self.post_invalid_input()
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'list.html')
-    
+        self.assertTemplateUsed(response, "list.html")
+
     def test_for_invalid_input_passes_form_to_template(self):
         response = self.post_invalid_input()
-        self.assertIsInstance(response.context['form'], ItemForm)
+        self.assertIsInstance(response.context["form"], ItemForm)
 
     def test_for_invalid_input_shows_error_on_page(self):
         response = self.post_invalid_input()
         self.assertContains(response, escape(EMPTY_ITEM_ERROR))
+
+    @skip
+    def test_duplicate_item_validation_errors_end_up_on_lists_page(self):
+        list1 = List.objects.create()
+        item1 = Item.objects.create(list=list1, text="textey")
+        response = self.client.post(
+            "/lists/{}/".format(list1.id), data={"text": "textey"}
+        )
+
+        expected_error = escape("You've already got this in your list")
+        self.assertContains(response, expected_error)
+        self.assertTemplateUsed(response, "list.html")
+        self.assertEqual(Item.objects.all().count(), 1)
 
     def test_displays_item_form(self):
         list_ = List.objects.create()
