@@ -1,6 +1,6 @@
+import re
 from django.core import mail
 from selenium.webdriver.common.keys import Keys
-import re
 
 from .base import FunctionalTest
 
@@ -38,6 +38,6 @@ class LoginTest(FunctionalTest):
         self.browser.get(url)
         self.wait_to_be_logged_in(email=TEST_EMAIL)
 
-        self.browser.find_element_by_link_text('Log out').click()
+        self.browser.find_element_by_link_text("Log out").click()
 
         self.wait_to_be_logged_out(email=TEST_EMAIL)
