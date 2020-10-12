@@ -11,7 +11,6 @@ class MyListsTest(FunctionalTest):
         else:
             session_key = create_pre_authenticated_session(email)
         self.browser.get(self.live_server_url + "/404_no_such_url/")
-        self.fail()
         self.browser.add_cookie(
             dict(name=settings.SESSION_COOKIE_NAME, value=session_key, path="/",)
         )
